@@ -39,8 +39,7 @@ public class AdvancedAstrologyApp {
         // Create and populate D9 chart
         DivisionalChartData d9 = new DivisionalChartData(DivisionalChart.D9);
         d9.setAscendant(ZodiacSign.GEMINI);
-        //d9.addPlanetPosition(Planet.MOON, new PlanetPosition(Planet.MOON, 4, ZodiacSign.VIRGO, 15.5, Nakshatra.PURVA_PHALGUNI));
-        d9.addPlanetPosition(Planet.MOON, new PlanetPosition(Planet.MOON, 7, ZodiacSign.SAGITTARIUS, 15.5, Nakshatra.PURVA_PHALGUNI));
+        d9.addPlanetPosition(Planet.MOON, new PlanetPosition(Planet.MOON, 4, ZodiacSign.VIRGO, 15.5, Nakshatra.PURVA_PHALGUNI));
         d9.addPlanetPosition(Planet.VENUS, new PlanetPosition(Planet.VENUS, 6, ZodiacSign.SCORPIO, 8.0, Nakshatra.SWATI));
         d9.addPlanetPosition(Planet.RAHU, new PlanetPosition(Planet.RAHU, 6, ZodiacSign.SCORPIO, 20.0, Nakshatra.ASHWINI));
         d9.addPlanetPosition(Planet.SATURN, new PlanetPosition(Planet.SATURN, 7, ZodiacSign.SAGITTARIUS, 10.0, Nakshatra.PUSHYA));
