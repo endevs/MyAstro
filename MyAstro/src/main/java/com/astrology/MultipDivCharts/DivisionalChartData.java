@@ -21,7 +21,9 @@ public class DivisionalChartData {
 
     // Add methods to manage planet positions and house lords
     public void addPlanetPosition(Planet planet, PlanetPosition position) {
-        planetPositions.put(planet, position);
+        if (planet != null && position != null) {
+            planetPositions.put(planet, position);
+        }
     }
     
     public PlanetPosition getPlanetPosition(Planet planet) {
