@@ -51,12 +51,13 @@ public class NorthIndianChartImageGenerator {
 
         // Draw chart outline
         g2d.setColor(Color.BLACK);
+        g2d.drawRect(startX, startY + 50, 500, 500);
+        g2d.drawLine(startX, startY + 50, startX + 500, startY + 550);
+        g2d.drawLine(startX, startY + 550, startX + 500, startY + 50);
         g2d.drawLine(startX, startY + 300, startX + 250, startY + 50);
         g2d.drawLine(startX + 250, startY + 50, startX + 500, startY + 300);
         g2d.drawLine(startX + 500, startY + 300, startX + 250, startY + 550);
         g2d.drawLine(startX + 250, startY + 550, startX, startY + 300);
-        g2d.drawLine(startX, startY + 50, startX + 500, startY + 550);
-        g2d.drawLine(startX, startY + 550, startX + 500, startY + 50);
 
         // Get houses
         ZodiacSign[] houses = new ZodiacSign[12];
@@ -66,30 +67,35 @@ public class NorthIndianChartImageGenerator {
             houses[i] = ZodiacSign.values()[(ascendant.ordinal() + i) % 12];
         }
 
-        // Set font
-        g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-
         // Draw houses and planets
-        drawHouse(g2d, houses[0], chartData, startX + 225, startY + 100);
-        drawHouse(g2d, houses[1], chartData, startX + 100, startY + 100);
-        drawHouse(g2d, houses[2], chartData, startX + 25, startY + 175);
-        drawHouse(g2d, houses[3], chartData, startX + 25, startY + 300);
-        drawHouse(g2d, houses[4], chartData, startX + 25, startY + 425);
-        drawHouse(g2d, houses[5], chartData, startX + 100, startY + 500);
-        drawHouse(g2d, houses[6], chartData, startX + 225, startY + 500);
-        drawHouse(g2d, houses[7], chartData, startX + 350, startY + 500);
-        drawHouse(g2d, houses[8], chartData, startX + 425, startY + 425);
-        drawHouse(g2d, houses[9], chartData, startX + 425, startY + 300);
-        drawHouse(g2d, houses[10], chartData, startX + 425, startY + 175);
-        drawHouse(g2d, houses[11], chartData, startX + 350, startY + 100);
+        drawHouse(g2d, houses[0], chartData, startX + 225, startY + 100, true);
+        drawHouse(g2d, houses[1], chartData, startX + 100, startY + 100, false);
+        drawHouse(g2d, houses[2], chartData, startX + 25, startY + 175, false);
+        drawHouse(g2d, houses[3], chartData, startX + 25, startY + 300, false);
+        drawHouse(g2d, houses[4], chartData, startX + 25, startY + 425, false);
+        drawHouse(g2d, houses[5], chartData, startX + 100, startY + 500, false);
+        drawHouse(g2d, houses[6], chartData, startX + 225, startY + 500, false);
+        drawHouse(g2d, houses[7], chartData, startX + 350, startY + 500, false);
+        drawHouse(g2d, houses[8], chartData, startX + 425, startY + 425, false);
+        drawHouse(g2d, houses[9], chartData, startX + 425, startY + 300, false);
+        drawHouse(g2d, houses[10], chartData, startX + 425, startY + 175, false);
+        drawHouse(g2d, houses[11], chartData, startX + 350, startY + 100, false);
     }
 
-    private static void drawHouse(Graphics2D g2d, ZodiacSign sign, DivisionalChartData chartData, int x, int y) {
+    private static void drawHouse(Graphics2D g2d, ZodiacSign sign, DivisionalChartData chartData, int x, int y, boolean isAscendant) {
         List<String> planets = ChartUtils.getPlanetsInSign(sign, chartData.getPlanetPositions());
-        String houseString =  sign.name().substring(0, 2) + " [" + (sign.ordinal() + 1) + "] ";
+        g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+        String signString = "[" + (sign.ordinal() + 1) + "] " + sign.name().substring(0, 2);
+        g2d.drawString(signString, x - 20, y - 20);
+
         if (!planets.isEmpty()) {
-            houseString += " " + String.join(",", planets);
+            g2d.setFont(new Font("Arial", Font.BOLD, 12));
+            String planetsString = String.join(",", planets);
+            g2d.drawString(planetsString, x, y);
         }
-        g2d.drawString(houseString, x, y);
+        if (isAscendant) {
+            g2d.setFont(new Font("Arial", Font.BOLD, 12));
+            g2d.drawString("As", x + 20, y - 20);
+        }
     }
 }
