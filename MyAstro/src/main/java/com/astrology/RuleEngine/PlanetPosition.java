@@ -9,6 +9,9 @@ public class PlanetPosition {
 
     // Constructor, getters, setters
     public PlanetPosition(Planet planet, int house, ZodiacSign sign, double degree, Nakshatra nakshatra) {
+        if (house < 1 || house > 12) {
+            throw new IllegalArgumentException("House number must be between 1 and 12.");
+        }
         this.planet = planet;
         this.house = house;
         this.sign = sign;
@@ -29,6 +32,9 @@ public class PlanetPosition {
 	}
 
 	public void setHouse(int house) {
+        if (house < 1 || house > 12) {
+            throw new IllegalArgumentException("House number must be between 1 and 12.");
+        }
 		this.house = house;
 	}
 
