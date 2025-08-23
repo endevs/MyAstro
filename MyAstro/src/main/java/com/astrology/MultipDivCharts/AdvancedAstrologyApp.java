@@ -42,8 +42,8 @@ public class AdvancedAstrologyApp {
 
         // Generate the chart image
         try {
-            String imagePath = "north_indian_chart.png";
-            NorthIndianChartImageGenerator.generateChartImage(d1, imagePath);
+        	String imagePath = "north_indian_chart.png";
+            NorthIndianChartImageGenerator.generateChartImage(d1, imagePath, "DharmaRaj Panigrahi", "05-Apr-1983", "04:40 AM", "Bhanjanagar, IND");
             System.out.println("Chart image generated at: " + new File(imagePath).getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();

@@ -12,9 +12,9 @@ import com.astrology.RuleEngine.ZodiacSign;
 
 public class NorthIndianChartImageGenerator {
 
-    public static void generateChartImage(DivisionalChartData chartData, String filePath) throws IOException {
+    public static void generateChartImage(DivisionalChartData chartData, String filePath, String name, String dob, String tob, String pob) throws IOException {
         int width = 600;
-        int height = 600;
+        int height = 700;
 
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = bufferedImage.createGraphics();
@@ -23,14 +23,23 @@ public class NorthIndianChartImageGenerator {
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, width, height);
 
+        // Draw person's details
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Arial", Font.BOLD, 16));
+        g2d.drawString("Name: " + name, 50, 30);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+        g2d.drawString("Date of Birth: " + dob, 50, 50);
+        g2d.drawString("Time of Birth: " + tob, 50, 70);
+        g2d.drawString("Place of Birth: " + pob, 50, 90);
+
         // Draw chart outline
         g2d.setColor(Color.BLACK);
-        g2d.drawLine(50, 300, 300, 50);
-        g2d.drawLine(300, 50, 550, 300);
-        g2d.drawLine(550, 300, 300, 550);
-        g2d.drawLine(300, 550, 50, 300);
-        g2d.drawLine(50, 50, 550, 550);
-        g2d.drawLine(50, 550, 550, 50);
+        g2d.drawLine(50, 400, 300, 150);
+        g2d.drawLine(300, 150, 550, 400);
+        g2d.drawLine(550, 400, 300, 650);
+        g2d.drawLine(300, 650, 50, 400);
+        g2d.drawLine(50, 150, 550, 650);
+        g2d.drawLine(50, 650, 550, 150);
 
         // Get houses
         ZodiacSign[] houses = new ZodiacSign[12];
@@ -44,18 +53,18 @@ public class NorthIndianChartImageGenerator {
         g2d.setFont(new Font("Arial", Font.PLAIN, 12));
 
         // Draw houses and planets
-        drawHouse(g2d, houses[0], chartData, 275, 100);
-        drawHouse(g2d, houses[1], chartData, 150, 100);
-        drawHouse(g2d, houses[2], chartData, 75, 175);
-        drawHouse(g2d, houses[3], chartData, 75, 300);
-        drawHouse(g2d, houses[4], chartData, 75, 425);
-        drawHouse(g2d, houses[5], chartData, 150, 500);
-        drawHouse(g2d, houses[6], chartData, 275, 500);
-        drawHouse(g2d, houses[7], chartData, 400, 500);
-        drawHouse(g2d, houses[8], chartData, 475, 425);
-        drawHouse(g2d, houses[9], chartData, 475, 300);
-        drawHouse(g2d, houses[10], chartData, 475, 175);
-        drawHouse(g2d, houses[11], chartData, 400, 100);
+        drawHouse(g2d, houses[0], chartData, 275, 200);
+        drawHouse(g2d, houses[1], chartData, 150, 200);
+        drawHouse(g2d, houses[2], chartData, 75, 275);
+        drawHouse(g2d, houses[3], chartData, 75, 400);
+        drawHouse(g2d, houses[4], chartData, 75, 525);
+        drawHouse(g2d, houses[5], chartData, 150, 600);
+        drawHouse(g2d, houses[6], chartData, 275, 600);
+        drawHouse(g2d, houses[7], chartData, 400, 600);
+        drawHouse(g2d, houses[8], chartData, 475, 525);
+        drawHouse(g2d, houses[9], chartData, 475, 400);
+        drawHouse(g2d, houses[10], chartData, 475, 275);
+        drawHouse(g2d, houses[11], chartData, 400, 200);
 
         g2d.dispose();
 
@@ -66,7 +75,7 @@ public class NorthIndianChartImageGenerator {
 
     private static void drawHouse(Graphics2D g2d, ZodiacSign sign, DivisionalChartData chartData, int x, int y) {
         List<String> planets = ChartUtils.getPlanetsInSign(sign, chartData.getPlanetPositions());
-        String houseString = "[" + sign.name().substring(0, 2) + "]";
+        String houseString =  sign.name().substring(0, 2) + " [" + (sign.ordinal() + 1) + "] ";
         if (!planets.isEmpty()) {
             houseString += " " + String.join(",", planets);
         }
