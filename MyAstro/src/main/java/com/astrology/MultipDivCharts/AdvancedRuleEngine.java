@@ -17,7 +17,7 @@ public class AdvancedRuleEngine {
         // Register basic rules
         //this.rules.add(new SunInTenthHouseRule());
         // Register divisional chart rules
-        this.rules.add(new PlanetInRasiAndNavamsaRule(Planet.VENUS, ZodiacSign.TAURUS, ZodiacSign.LIBRA));
+        this.rules.add(new Rule_VargottamaPlanet());
         this.rules.add(new SeventhLordInD1D9Rule());
         // Add more rules here
     }
