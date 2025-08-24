@@ -5,6 +5,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+
 import com.astrology.RuleEngine.Nakshatra;
 import com.astrology.RuleEngine.Planet;
 import com.astrology.RuleEngine.PlanetPosition;
@@ -12,72 +18,138 @@ import com.astrology.RuleEngine.RuleResult;
 import com.astrology.RuleEngine.ZodiacSign;
 
 public class AdvancedAstrologyApp {
+
     public static void main(String[] args) {
-        // Create complete chart with multiple divisional charts
-        CompleteChart completeChart = new CompleteChart();
-        
-        // Create and populate D1 chart
-        DivisionalChartData d1 = new DivisionalChartData(DivisionalChart.D1);
-        d1.setAscendant(ZodiacSign.AQUARIUS);
-        
         try {
-            d1.addPlanetPosition(Planet.SUN, new PlanetPosition(Planet.SUN, 2, ZodiacSign.PISCES, 15.5, Nakshatra.PURVA_PHALGUNI));
-            d1.addPlanetPosition(Planet.MERCURY, new PlanetPosition(Planet.MERCURY, 2, ZodiacSign.PISCES, 12.5, Nakshatra.PURVA_PHALGUNI));
-            d1.addPlanetPosition(Planet.VENUS, new PlanetPosition(Planet.VENUS, 3, ZodiacSign.ARIES, 8.0, Nakshatra.KRITTIKA));
-            d1.addPlanetPosition(Planet.MARS, new PlanetPosition(Planet.MARS, 3, ZodiacSign.ARIES, 20.0, Nakshatra.ROHINI));
-            d1.addPlanetPosition(Planet.RAHU, new PlanetPosition(Planet.RAHU, 5, ZodiacSign.GEMINI, 5.0, Nakshatra.MRIGASHIRSHA));
-            d1.addPlanetPosition(Planet.SATURN, new PlanetPosition(Planet.SATURN, 9, ZodiacSign.LIBRA, 10.0, Nakshatra.PUSHYA));
-            d1.addPlanetPosition(Planet.JUPITER, new PlanetPosition(Planet.JUPITER, 10, ZodiacSign.SCORPIO, 25.0, Nakshatra.UTTARA_PHALGUNI));
-            d1.addPlanetPosition(Planet.KETU, new PlanetPosition(Planet.KETU, 11, ZodiacSign.SAGITTARIUS, 15.0, Nakshatra.SWATI));
-            d1.addPlanetPosition(Planet.MOON, new PlanetPosition(Planet.MOON, 11, ZodiacSign.SAGITTARIUS, 25.0, Nakshatra.ASHWINI)); // Invalid house number
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
+            List<ChartData> chartDataList = ExcelChartParser.parse("Charts.csv");
+
+            for (ChartData chartData : chartDataList) {
+                processChart(chartData);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        // Set house lords for D1...
+    }
+
+    private static void processChart(ChartData chartData) {
+        CompleteChart completeChart = new CompleteChart();
+        DivisionalChartData d1 = new DivisionalChartData(DivisionalChart.D1);
+
+        // The first house position determines the ascendant
+        String[] firstHouse = chartData.getHousePositions()[0].split("-");
+        d1.setAscendant(getZodiacSign(Integer.parseInt(firstHouse[0])));
+
+        int houseNumber = 1;
+        for (String housePositionString : chartData.getHousePositions()) {
+            String[] parts = housePositionString.split("-");
+            ZodiacSign sign = getZodiacSign(Integer.parseInt(parts[0]));
+
+            for (int i = 1; i < parts.length; i++) {
+                String planetString = parts[i];
+                Planet planet = getPlanet(planetString);
+                boolean isRetro = isRetrograde(planetString);
+                // Using dummy values for degrees and Nakshatra as they are not in the CSV
+                d1.addPlanetPosition(planet, new PlanetPosition(planet, houseNumber, sign, 0.0, Nakshatra.ASHWINI, isRetro));
+            }
+            houseNumber++;
+        }
+
         completeChart.addDivisionalChart(DivisionalChart.D1, d1);
-        
-        // Create and populate D9 chart
-        DivisionalChartData d9 = new DivisionalChartData(DivisionalChart.D9);
-        d9.setAscendant(ZodiacSign.GEMINI);
-        d9.addPlanetPosition(Planet.MOON, new PlanetPosition(Planet.MOON, 4, ZodiacSign.VIRGO, 15.5, Nakshatra.PURVA_PHALGUNI));
-        d9.addPlanetPosition(Planet.VENUS, new PlanetPosition(Planet.VENUS, 6, ZodiacSign.SCORPIO, 8.0, Nakshatra.SWATI));
-        d9.addPlanetPosition(Planet.RAHU, new PlanetPosition(Planet.RAHU, 6, ZodiacSign.SCORPIO, 20.0, Nakshatra.ASHWINI));
-        d9.addPlanetPosition(Planet.SATURN, new PlanetPosition(Planet.SATURN, 7, ZodiacSign.SAGITTARIUS, 10.0, Nakshatra.PUSHYA));
-        d9.addPlanetPosition(Planet.JUPITER, new PlanetPosition(Planet.JUPITER, 7, ZodiacSign.SAGITTARIUS, 25.0, Nakshatra.UTTARA_PHALGUNI));
-        d9.addPlanetPosition(Planet.SUN, new PlanetPosition(Planet.SUN, 8, ZodiacSign.CAPRICORN, 15.0, Nakshatra.MRIGASHIRSHA));
-        d9.addPlanetPosition(Planet.MERCURY, new PlanetPosition(Planet.MERCURY, 11, ZodiacSign.ARIES, 25.0, Nakshatra.KRITTIKA));
-        d9.addPlanetPosition(Planet.MARS, new PlanetPosition(Planet.MARS, 12, ZodiacSign.TAURUS, 5.0, Nakshatra.ROHINI));
-        d9.addPlanetPosition(Planet.KETU, new PlanetPosition(Planet.KETU, 12, ZodiacSign.TAURUS, 10.0, Nakshatra.PURVA_PHALGUNI));
-        // Set house lords for D9...
-        completeChart.addDivisionalChart(DivisionalChart.D9, d9);
 
-        // Validate charts
-        boolean isD1Valid = ChartValidator.validate(d1);
-        boolean isD9Valid = ChartValidator.validate(d9);
-
-        if (isD1Valid && isD9Valid) {
-            // Generate the chart image
+        if (ChartValidator.validate(d1)) {
             try {
-                String personName = "DharmaRaj Panigrahi";
-                String imagePath = personName.replace(" ", "_") + "_chart.png";
-                NorthIndianChartImageGenerator.generateChartImage(d1, d9, imagePath, personName, "05-Apr-1983", "04:40 AM", "Bhanjanagar, IND");
-                System.out.println("Chart image generated at: " + new File(imagePath).getAbsolutePath());
+                String personName = chartData.getName();
+                String imagePath = "E:\\STUDY\\Astrology\\GeneratePDF\\"+personName.replace(" ", "_") + "_chart.png";
+                NorthIndianChartImageGenerator.generateChartImage(d1, null, imagePath, personName, chartData.getDob(), chartData.getBirthTime(), chartData.getBirthPlace());
+                //System.out.println("Chart image generated at: " + new File(imagePath).getAbsolutePath());
+
+                AdvancedRuleEngine engine = new AdvancedRuleEngine();
+                Map<String, List<RuleResult>> results = engine.evaluateCompleteChart(completeChart, DivisionalChart.D1);
+
+                generatePdf(personName, imagePath, results, chartData);
+                printResultsToConsole(personName, results);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            
-            // Evaluate with focus on D1 chart
-            AdvancedRuleEngine engine = new AdvancedRuleEngine();
-            Map<String, List<RuleResult>> results = engine.evaluateCompleteChart(completeChart, DivisionalChart.D1);
-            
-            // Display results
-            results.forEach((category, ruleResults) -> {
-                System.out.println("\n=== " + category.toUpperCase() + " ===");
-                ruleResults.forEach(result -> 
-                    System.out.printf("- %s (Confidence: %.0f%%)\\n", 
-                        result.getDescription(), result.getConfidence() * 100)
-                );
-            });
         }
+    }
+
+    private static void generatePdf(String personName, String imagePath, Map<String, List<RuleResult>> results, ChartData chartData) throws IOException {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
+
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                contentStream.beginText();
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
+                contentStream.newLineAtOffset(50, 750);
+                contentStream.showText("Natal Chart for: " + personName);
+                contentStream.endText();
+
+                PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, document);
+                contentStream.drawImage(pdImage, 50, 450, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
+
+                contentStream.beginText();
+                contentStream.setFont(PDType1Font.HELVETICA, 12);
+                contentStream.newLineAtOffset(50, 400);
+                results.forEach((category, ruleResults) -> {
+                    try {
+                        contentStream.showText("=== " + category.toUpperCase() + " ===");
+                        contentStream.newLine();
+                        for (RuleResult result : ruleResults) {
+                            contentStream.showText(String.format("- %s (Confidence: %.0f%%)", result.getDescription(), result.getConfidence() * 100));
+                            contentStream.newLine();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                contentStream.endText();
+            }
+
+            String pdfPath = "E:\\STUDY\\Astrology\\GeneratePDF\\"+personName.replace(" ", "_") + "_chart.pdf";
+            document.save(pdfPath);
+            System.out.println("PDF generated at: " + new File(pdfPath).getAbsolutePath());
+        }
+    }
+
+    private static void printResultsToConsole(String personName, Map<String, List<RuleResult>> results) {
+        System.out.println("\n=== Astrological Report for " + personName + " ===");
+        results.forEach((category, ruleResults) -> {
+            System.out.println("\n=== " + category.toUpperCase() + " ===");
+            ruleResults.forEach(result ->
+                System.out.printf("- %s (Confidence: %.0f%%)\\%n",
+                    result.getDescription(), result.getConfidence() * 100)
+            );
+        });
+    }
+
+    private static ZodiacSign getZodiacSign(int signNumber) {
+        return ZodiacSign.values()[signNumber - 1];
+    }
+
+    private static Planet getPlanet(String planetAbbreviation) {
+        String planetName = planetAbbreviation.replaceAll("[()]", "").toUpperCase();
+        if (planetName.length() > 2) { // Handle cases like 'SUN'
+        	return Planet.valueOf(planetName);
+        }
+        switch (planetName) {
+            case "SU": return Planet.SUN;
+            case "MO": return Planet.MOON;
+            case "MA": return Planet.MARS;
+            case "ME": return Planet.MERCURY;
+            case "JU": return Planet.JUPITER;
+            case "VE": return Planet.VENUS;
+            case "SA": return Planet.SATURN;
+            case "RA": return Planet.RAHU;
+            case "KE": return Planet.KETU;
+            default: throw new IllegalArgumentException("Unknown planet abbreviation: " + planetAbbreviation);
+        }
+    }
+
+    private static boolean isRetrograde(String planetString) {
+        return planetString.contains("(");
     }
 }

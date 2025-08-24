@@ -36,7 +36,9 @@ public class NorthIndianChartImageGenerator {
         drawChart(g2d, d1, "D1 Chart", 50, 120);
 
         // Draw D9 Chart
-        drawChart(g2d, d9, "D9 Chart", 650, 120);
+        if (d9 != null) {
+            drawChart(g2d, d9, "D9 Chart", 650, 120);
+        }
 
         g2d.dispose();
 

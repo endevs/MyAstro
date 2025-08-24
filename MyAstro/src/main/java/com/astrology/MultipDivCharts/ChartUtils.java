@@ -14,7 +14,12 @@ public class ChartUtils {
         List<String> planets = new ArrayList<>();
         for (Map.Entry<Planet, PlanetPosition> entry : planetPositions.entrySet()) {
             if (entry.getValue().getSign() == sign) {
-                planets.add(entry.getKey().name().substring(0, 2));
+                String planetName = entry.getKey().name().substring(0, 2);
+                if (entry.getValue().isRetrograde()) {
+                    planets.add("(" + planetName + ")");
+                } else {
+                    planets.add(planetName);
+                }
             }
         }
         return planets;
