@@ -11,6 +11,9 @@ import java.util.Map;
 
 public class NewRule1 implements AstrologyRule {
 
+    private final String ruleName = "House Lord Placement";
+    private final String reference = "N/A"; // No specific reference provided for this rule
+
     @Override
     public RuleResult evaluate(CompleteChart completeChart, DivisionalChart focusChart) {
         DivisionalChartData d1 = completeChart.getChart(DivisionalChart.D1);
@@ -33,7 +36,7 @@ public class NewRule1 implements AstrologyRule {
             }
             List<String> categories = new ArrayList<>();
             categories.add("House Lord Placement");
-            return new RuleResult(combinedDescription.toString(), 1.0, categories);
+            return new RuleResult(combinedDescription.toString(), 1.0, categories, ruleName, reference);
         }
     }
 
@@ -59,7 +62,7 @@ public class NewRule1 implements AstrologyRule {
                 if (predictionText != null) {
                     List<String> categories = new ArrayList<>();
                     categories.add("House Lord Placement");
-                    results.add(new RuleResult(predictionText, 1.0, categories));
+                    results.add(new RuleResult(predictionText, 1.0, categories, ruleName, reference));
                 }
             }
         }

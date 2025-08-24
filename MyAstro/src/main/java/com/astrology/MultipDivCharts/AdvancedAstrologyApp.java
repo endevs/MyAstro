@@ -118,6 +118,24 @@ public class AdvancedAstrologyApp {
                 yPosition -= 20;
 
                 for (RuleResult result : entry.getValue()) {
+                    // Print Rule Name and Reference if available
+                    if (result.getRuleName() != null && !result.getRuleName().isEmpty()) {
+                        contentStream.beginText();
+                        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
+                        contentStream.newLineAtOffset(margin, yPosition);
+                        contentStream.showText("Rule: " + result.getRuleName());
+                        contentStream.endText();
+                        yPosition -= 12;
+                    }
+                    if (result.getReference() != null && !result.getReference().isEmpty()) {
+                        contentStream.beginText();
+                        contentStream.setFont(PDType1Font.HELVETICA, 8);
+                        contentStream.newLineAtOffset(margin, yPosition);
+                        contentStream.showText("Reference: " + result.getReference());
+                        contentStream.endText();
+                        yPosition -= 10;
+                    }
+
                     String[] descriptionLines = result.getDescription().split("\\n");
                     for (String line : descriptionLines) {
                         String text = String.format("- %s (Confidence: %.0f%%)", line, result.getConfidence() * 100);

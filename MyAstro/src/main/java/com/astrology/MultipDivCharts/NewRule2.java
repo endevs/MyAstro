@@ -13,6 +13,9 @@ import java.util.Map;
 
 public class NewRule2 implements AstrologyRule {
 
+    private final String ruleName = "Secrets of Badhak Planets (How to use them)";
+    private final String reference = "https://astrology-endevs.blogspot.com/2018/07/secrets-of-badhak-planets-how-to-use.html";
+
     @Override
     public RuleResult evaluate(CompleteChart completeChart, DivisionalChart focusChart) {
         DivisionalChartData d1 = completeChart.getChart(DivisionalChart.D1);
@@ -33,7 +36,7 @@ public class NewRule2 implements AstrologyRule {
             for (RuleResult result : results) {
                 combinedDescription.append(result.getDescription()).append("\n");
             }
-            return new RuleResult(combinedDescription.toString(), 1.0, getCategories());
+            return new RuleResult(combinedDescription.toString(), 1.0, getCategories(), ruleName, reference);
         }
     }
 
@@ -59,12 +62,12 @@ public class NewRule2 implements AstrologyRule {
 
             if (natalChart.getHouses().get(12).getPlanetsContainHouse().contains(badhakeshPlanet)) {
                 String prediction = predictionText + "Badhakesh in 12th house - suppose to separation of spouse, good combination for others aspects like income, only problem in marriage.";
-                results.add(new RuleResult(prediction, 1.0, getCategories()));
+                results.add(new RuleResult(prediction, 1.0, getCategories(), ruleName, reference));
             }
 
             if (natalChart.getHouses().get(badhaHouseNumber).getPlanetsContainHouse().contains(lord12th)) {
                 String prediction = predictionText + "12th Lord in Badhakesh - suppose to separation of spouse, good combination for others aspects like income, only problem in marriage.";
-                results.add(new RuleResult(prediction, 1.0, getCategories()));
+                results.add(new RuleResult(prediction, 1.0, getCategories(), ruleName, reference));
             }
         }
 
