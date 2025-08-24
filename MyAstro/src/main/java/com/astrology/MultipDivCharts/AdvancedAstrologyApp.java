@@ -2,6 +2,7 @@ package com.astrology.MultipDivCharts;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -85,41 +86,94 @@ public class AdvancedAstrologyApp {
             PDPage page = new PDPage();
             document.addPage(page);
 
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
-                contentStream.newLineAtOffset(50, 750);
-                contentStream.showText("Natal Chart for: " + personName);
-                contentStream.endText();
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
 
-                PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, document);
-                contentStream.drawImage(pdImage, 50, 450, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
+            contentStream.newLineAtOffset(50, 750);
+            contentStream.showText("Natal Chart for: " + personName);
+            contentStream.endText();
 
-                float yPosition = 400;
-                for (Map.Entry<String, List<RuleResult>> entry : results.entrySet()) {
-                    contentStream.beginText();
-                    contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
-                    contentStream.newLineAtOffset(50, yPosition);
-                    contentStream.showText("=== " + entry.getKey().toUpperCase() + " ===");
-                    contentStream.endText();
-                    yPosition -= 20;
+            PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, document);
+            contentStream.drawImage(pdImage, 50, 450, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
 
-                    for (RuleResult result : entry.getValue()) {
-                        contentStream.beginText();
-                        contentStream.setFont(PDType1Font.HELVETICA, 10);
-                        contentStream.newLineAtOffset(50, yPosition);
-                        contentStream.showText(String.format("- %s (Confidence: %.0f%%)", result.getDescription(), result.getConfidence() * 100));
-                        contentStream.endText();
-                        yPosition -= 15;
-                    }
-                    yPosition -= 10; // Add some space between categories
+            float yPosition = 400;
+            float margin = 50;
+            float width = page.getMediaBox().getWidth() - 2 * margin;
+            float lineHeight = 15; // Approximate line height
+
+            for (Map.Entry<String, List<RuleResult>> entry : results.entrySet()) {
+                // Check if there's enough space for the category header
+                if (yPosition < margin + 20) { // 20 is arbitrary space for header
+                    contentStream.close();
+                    page = new PDPage();
+                    document.addPage(page);
+                    contentStream = new PDPageContentStream(document, page);
+                    yPosition = page.getMediaBox().getHeight() - margin; // Reset yPosition for new page
                 }
+
+                contentStream.beginText();
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.showText("=== " + entry.getKey().toUpperCase() + " ===");
+                contentStream.endText();
+                yPosition -= 20;
+
+                for (RuleResult result : entry.getValue()) {
+                    String text = String.format("- %s (Confidence: %.0f%%)", result.getDescription(), result.getConfidence() * 100);
+                    
+                    // Estimate lines needed for this result
+                    float textHeight = (float) Math.ceil(PDType1Font.HELVETICA.getStringWidth(text) / 1000 * 10 / width) * lineHeight;
+
+                    if (yPosition < margin + textHeight) {
+                        contentStream.close();
+                        page = new PDPage();
+                        document.addPage(page);
+                        contentStream = new PDPageContentStream(document, page);
+                        yPosition = page.getMediaBox().getHeight() - margin;
+                    }
+
+                    yPosition = writeWrappedText(contentStream, text, PDType1Font.HELVETICA, 10, margin, yPosition, width);
+                    yPosition -= 5; // Add some space between results
+                }
+                yPosition -= 10; // Add some space between categories
             }
+            contentStream.close(); // Close the last content stream
 
             String pdfPath = "E:\\STUDY\\Astrology\\GeneratePDF\\"+personName.replace(" ", "_") + "_chart.pdf";
             document.save(pdfPath);
             System.out.println("PDF generated at: " + new File(pdfPath).getAbsolutePath());
         }
+    }
+
+    private static float writeWrappedText(PDPageContentStream contentStream, String text, PDType1Font font, float fontSize, float x, float y, float maxWidth) throws IOException {
+        float yPosition = y;
+        List<String> lines = new ArrayList<>();
+        String[] words = text.split(" ");
+        StringBuilder line = new StringBuilder();
+
+        for (String word : words) {
+            float wordWidth = font.getStringWidth(word) / 1000 * fontSize;
+            float lineWidth = font.getStringWidth(line.toString()) / 1000 * fontSize;
+
+            if (lineWidth + wordWidth > maxWidth) {
+                lines.add(line.toString());
+                line = new StringBuilder(word + " ");
+            } else {
+                line.append(word + " ");
+            }
+        }
+        lines.add(line.toString());
+
+        for (String l : lines) {
+            contentStream.beginText();
+            contentStream.setFont(font, fontSize);
+            contentStream.newLineAtOffset(x, yPosition);
+            contentStream.showText(l);
+            contentStream.endText();
+            yPosition -= 15;
+        }
+        return yPosition;
     }
 
     private static void printResultsToConsole(String personName, Map<String, List<RuleResult>> results) {
