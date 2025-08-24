@@ -403,4 +403,43 @@ public class NewUtils {
         }
         return planetOwner ;
     }
+
+    public static Planet getLagnaLord(NatalChart natalChart) {
+        House lagnaHouse = natalChart.getHouses().get(1);
+        Planet houseOwner = lagnaHouse.getHouseOwner();
+
+        if(houseOwner.getPlanetName().equals("RAHU")) {
+            houseOwner = planets.get("SATURN");
+        }
+        return houseOwner;
+    }
+
+    public static House getHouseWherePlanetPlaced(NatalChart natalChart, Planet planet) {
+        House resultHouse = null;
+        for(Map.Entry<Integer, House> entry : natalChart.getHouses().entrySet()){
+            House houseCurrent = entry.getValue();
+            if(houseCurrent.getPlanetsContainHouse().contains(planet)) {
+                resultHouse = houseCurrent;
+                break; // Assuming a planet is in only one house
+            }
+        }
+        return resultHouse;
+    }
+
+    public static Integer houseToHouseOwner(Integer startHouseNumber, Integer endHouseNumber) {
+        int distance = (endHouseNumber - startHouseNumber + 12) % 12;
+        if (distance == 0) { // If it's the same house, distance is 1
+            return 1;
+        }
+        return distance + 1; // +1 because distance is inclusive of the end house
+    }
+
+    public static Integer add1stParameterHouseto2ndParameterHouse(Integer distance, House startHouse) {
+        int startHouseNumber = startHouse.getHouseNumber();
+        int targetHouseNumber = ((startHouseNumber - 1 + distance -1) % 12) + 1; // -1 for 0-indexed, +1 for 1-indexed. distance-1 because distance is inclusive.
+        if (targetHouseNumber <= 0) { // Handle cases where result might be 0 or negative due to modulo
+            targetHouseNumber += 12;
+        }
+        return targetHouseNumber;
+    }
 }

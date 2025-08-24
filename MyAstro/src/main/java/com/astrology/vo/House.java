@@ -3,6 +3,7 @@ package com.astrology.vo;
 import java.util.List;
 
 import com.astrology.utils.Utils;
+import com.astrology.MultipDivCharts.NewUtils;
 
 public class House {
 	Integer houseNumber; //Change to Bhabha
@@ -35,7 +36,7 @@ public class House {
 	}
 	public void setHouseSign(Sign houseSign) {
 		this.houseSign = houseSign;
-		this.houseOwner = Utils.getHouseOwner(houseSign);
+		this.houseOwner = NewUtils.getHouseOwner(houseSign);
 	}
 	public boolean isAscendant() {
 		return ascendant;

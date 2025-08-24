@@ -22,6 +22,7 @@ public class AdvancedRuleEngine {
         this.rules.add(new Rule_SignOfTheChart());
         this.rules.add(new NewRule1());
         this.rules.add(new NewRule2());
+        this.rules.add(new NewRule3());
         // Add more rules here
     }
     
