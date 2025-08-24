@@ -6,8 +6,21 @@ public class PlanetPosition {
     private ZodiacSign sign;
     private double degree;
     private Nakshatra nakshatra;
+    private boolean isRetrograde;
 
     // Constructor, getters, setters
+    public PlanetPosition(Planet planet, int house, ZodiacSign sign, double degree, Nakshatra nakshatra, boolean isRetrograde) {
+        if (house < 1 || house > 12) {
+            throw new IllegalArgumentException("House number must be between 1 and 12.");
+        }
+        this.planet = planet;
+        this.house = house;
+        this.sign = sign;
+        this.degree = degree;
+        this.nakshatra = nakshatra;
+        this.isRetrograde = isRetrograde;
+    }
+    
     public PlanetPosition(Planet planet, int house, ZodiacSign sign, double degree, Nakshatra nakshatra) {
         if (house < 1 || house > 12) {
             throw new IllegalArgumentException("House number must be between 1 and 12.");
@@ -17,6 +30,7 @@ public class PlanetPosition {
         this.sign = sign;
         this.degree = degree;
         this.nakshatra = nakshatra;
+        this.isRetrograde = false;
     }
 
 	public Planet getPlanet() {
@@ -62,5 +76,11 @@ public class PlanetPosition {
 		this.nakshatra = nakshatra;
 	}
     
-    
+    public boolean isRetrograde() {
+        return isRetrograde;
+    }
+
+    public void setRetrograde(boolean isRetrograde) {
+        this.isRetrograde = isRetrograde;
+    }
 }
