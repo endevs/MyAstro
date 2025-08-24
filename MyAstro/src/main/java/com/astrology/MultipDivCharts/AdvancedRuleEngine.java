@@ -19,6 +19,7 @@ public class AdvancedRuleEngine {
         // Register divisional chart rules
         this.rules.add(new Rule_VargottamaPlanet());
         this.rules.add(new SeventhLordInD1D9Rule());
+        this.rules.add(new Rule_SignOfTheChart());
         // Add more rules here
     }
     
