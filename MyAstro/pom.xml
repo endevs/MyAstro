@@ -103,6 +103,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.astro.demo.MyAstroApplication</mainClass>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<mainClass>com.astrology.MultipDivCharts.AdvancedAstrologyApp</mainClass>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
