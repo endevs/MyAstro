@@ -67,6 +67,10 @@ public class AdvancedAstrologyApp {
                 AdvancedRuleEngine engine = new AdvancedRuleEngine();
                 Map<String, List<RuleResult>> results = engine.evaluateCompleteChart(completeChart, DivisionalChart.D1);
 
+                NewRule1 newRule1 = new NewRule1();
+                List<RuleResult> rule1Results = newRule1.evaluate(d1);
+                results.put("House Lord Placement", rule1Results);
+
                 generatePdf(personName, imagePath, results, chartData);
                 printResultsToConsole(personName, results);
 
@@ -91,22 +95,25 @@ public class AdvancedAstrologyApp {
                 PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, document);
                 contentStream.drawImage(pdImage, 50, 450, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
 
-                contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA, 12);
-                contentStream.newLineAtOffset(50, 400);
-                results.forEach((category, ruleResults) -> {
-                    try {
-                        contentStream.showText("=== " + category.toUpperCase() + " ===");
-                        contentStream.newLine();
-                        for (RuleResult result : ruleResults) {
-                            contentStream.showText(String.format("- %s (Confidence: %.0f%%)", result.getDescription(), result.getConfidence() * 100));
-                            contentStream.newLine();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                float yPosition = 400;
+                for (Map.Entry<String, List<RuleResult>> entry : results.entrySet()) {
+                    contentStream.beginText();
+                    contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
+                    contentStream.newLineAtOffset(50, yPosition);
+                    contentStream.showText("=== " + entry.getKey().toUpperCase() + " ===");
+                    contentStream.endText();
+                    yPosition -= 20;
+
+                    for (RuleResult result : entry.getValue()) {
+                        contentStream.beginText();
+                        contentStream.setFont(PDType1Font.HELVETICA, 10);
+                        contentStream.newLineAtOffset(50, yPosition);
+                        contentStream.showText(String.format("- %s (Confidence: %.0f%%)", result.getDescription(), result.getConfidence() * 100));
+                        contentStream.endText();
+                        yPosition -= 15;
                     }
-                });
-                contentStream.endText();
+                    yPosition -= 10; // Add some space between categories
+                }
             }
 
             String pdfPath = "E:\\STUDY\\Astrology\\GeneratePDF\\"+personName.replace(" ", "_") + "_chart.pdf";
