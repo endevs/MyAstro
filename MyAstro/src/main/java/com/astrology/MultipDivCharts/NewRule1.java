@@ -1,18 +1,43 @@
 package com.astrology.MultipDivCharts;
 
 import com.astrology.RuleEngine.RuleResult;
-import com.astrology.MultipDivCharts.DivisionalChartData;
 import com.astrology.vo.House;
 import com.astrology.vo.NatalChart;
 import com.astrology.vo.Planet;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-public class NewRule1 {
+public class NewRule1 implements AstrologyRule {
 
-    public List<RuleResult> evaluate(DivisionalChartData d1) {
+    @Override
+    public RuleResult evaluate(CompleteChart completeChart, DivisionalChart focusChart) {
+        DivisionalChartData d1 = completeChart.getChart(DivisionalChart.D1);
+        if (d1 == null) {
+            return null;
+        }
+
+        List<RuleResult> results = evaluateD1(d1);
+
+        if (results.isEmpty()) {
+            return null;
+        }
+
+        if (results.size() == 1) {
+            return results.get(0);
+        } else {
+            StringBuilder combinedDescription = new StringBuilder();
+            for (RuleResult result : results) {
+                combinedDescription.append(result.getDescription()).append("\n");
+            }
+            List<String> categories = new ArrayList<>();
+            categories.add("House Lord Placement");
+            return new RuleResult(combinedDescription.toString(), 1.0, categories);
+        }
+    }
+
+    public List<RuleResult> evaluateD1(DivisionalChartData d1) {
         List<RuleResult> results = new ArrayList<>();
         NatalChart natalChart = NewUtils.createNatalChartFromDivisionalChartData(d1);
 

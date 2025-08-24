@@ -20,6 +20,8 @@ public class AdvancedRuleEngine {
         this.rules.add(new Rule_VargottamaPlanet());
         this.rules.add(new SeventhLordInD1D9Rule());
         this.rules.add(new Rule_SignOfTheChart());
+        this.rules.add(new NewRule1());
+        this.rules.add(new NewRule2());
         // Add more rules here
     }
     

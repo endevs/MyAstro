@@ -61,16 +61,14 @@ public class AdvancedAstrologyApp {
         if (ChartValidator.validate(d1)) {
             try {
                 String personName = chartData.getName();
-                String imagePath = "E:\\STUDY\\Astrology\\GeneratePDF\\"+personName.replace(" ", "_") + "_chart.png";
+                File outputDir = new File("target/generated-charts");
+                outputDir.mkdirs();
+                String imagePath = new File(outputDir, personName.replace(" ", "_") + "_chart.png").getAbsolutePath();
                 NorthIndianChartImageGenerator.generateChartImage(d1, null, imagePath, personName, chartData.getDob(), chartData.getBirthTime(), chartData.getBirthPlace());
                 //System.out.println("Chart image generated at: " + new File(imagePath).getAbsolutePath());
 
                 AdvancedRuleEngine engine = new AdvancedRuleEngine();
                 Map<String, List<RuleResult>> results = engine.evaluateCompleteChart(completeChart, DivisionalChart.D1);
-
-                NewRule1 newRule1 = new NewRule1();
-                List<RuleResult> rule1Results = newRule1.evaluate(d1);
-                results.put("House Lord Placement", rule1Results);
 
                 generatePdf(personName, imagePath, results, chartData);
                 printResultsToConsole(personName, results);
@@ -120,27 +118,32 @@ public class AdvancedAstrologyApp {
                 yPosition -= 20;
 
                 for (RuleResult result : entry.getValue()) {
-                    String text = String.format("- %s (Confidence: %.0f%%)", result.getDescription(), result.getConfidence() * 100);
-                    
-                    // Estimate lines needed for this result
-                    float textHeight = (float) Math.ceil(PDType1Font.HELVETICA.getStringWidth(text) / 1000 * 10 / width) * lineHeight;
+                    String[] descriptionLines = result.getDescription().split("\\n");
+                    for (String line : descriptionLines) {
+                        String text = String.format("- %s (Confidence: %.0f%%)", line, result.getConfidence() * 100);
+                        
+                        // Estimate lines needed for this result
+                        float textHeight = (float) Math.ceil(PDType1Font.HELVETICA.getStringWidth(text) / 1000 * 10 / width) * lineHeight;
 
-                    if (yPosition < margin + textHeight) {
-                        contentStream.close();
-                        page = new PDPage();
-                        document.addPage(page);
-                        contentStream = new PDPageContentStream(document, page);
-                        yPosition = page.getMediaBox().getHeight() - margin;
+                        if (yPosition < margin + textHeight) {
+                            contentStream.close();
+                            page = new PDPage();
+                            document.addPage(page);
+                            contentStream = new PDPageContentStream(document, page);
+                            yPosition = page.getMediaBox().getHeight() - margin;
+                        }
+
+                        yPosition = writeWrappedText(contentStream, text, PDType1Font.HELVETICA, 10, margin, yPosition, width);
+                        yPosition -= 5; // Add some space between results
                     }
-
-                    yPosition = writeWrappedText(contentStream, text, PDType1Font.HELVETICA, 10, margin, yPosition, width);
-                    yPosition -= 5; // Add some space between results
                 }
                 yPosition -= 10; // Add some space between categories
             }
             contentStream.close(); // Close the last content stream
 
-            String pdfPath = "E:\\STUDY\\Astrology\\GeneratePDF\\"+personName.replace(" ", "_") + "_chart.pdf";
+            File outputDir = new File("target/generated-charts");
+            outputDir.mkdirs();
+            String pdfPath = new File(outputDir, personName.replace(" ", "_") + "_chart.pdf").getAbsolutePath();
             document.save(pdfPath);
             System.out.println("PDF generated at: " + new File(pdfPath).getAbsolutePath());
         }
@@ -181,7 +184,7 @@ public class AdvancedAstrologyApp {
         results.forEach((category, ruleResults) -> {
             System.out.println("\n=== " + category.toUpperCase() + " ===");
             ruleResults.forEach(result ->
-                System.out.printf("- %s (Confidence: %.0f%%)\\%n",
+                System.out.printf("- %s (Confidence: %.0f%%)\\n",
                     result.getDescription(), result.getConfidence() * 100)
             );
         });
