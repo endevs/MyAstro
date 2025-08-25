@@ -442,4 +442,16 @@ public class NewUtils {
         }
         return targetHouseNumber;
     }
+
+    public static House getHousebySign(Sign houseSign, NatalChart natalChart) {
+        House resultHouse = null;
+        for(Map.Entry<Integer, House> entry : natalChart.getHouses().entrySet()){
+            House houseCurrent = entry.getValue();
+            if(houseCurrent.getHouseSign().getSignName().equalsIgnoreCase(houseSign.getSignName())) {
+                resultHouse = houseCurrent;
+                break;
+            }
+        }
+        return resultHouse;
+    }
 }

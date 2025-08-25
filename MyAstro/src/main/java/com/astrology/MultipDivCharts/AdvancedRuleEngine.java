@@ -23,6 +23,7 @@ public class AdvancedRuleEngine {
         this.rules.add(new NewRule1());
         this.rules.add(new NewRule2());
         this.rules.add(new NewRule3());
+        this.rules.add(new NewRule4());
         // Add more rules here
     }
     
