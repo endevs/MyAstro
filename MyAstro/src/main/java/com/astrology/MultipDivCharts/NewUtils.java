@@ -454,4 +454,16 @@ public class NewUtils {
         }
         return resultHouse;
     }
+
+    public static LinkedHashMap<Integer, House> getHousesFromThisSign(Sign lagnaSign, NatalChart natalChart,Integer[] hosueNumbers) {
+        LinkedHashMap<Integer, House> houses = new LinkedHashMap<Integer, House>();
+            for (Integer integer : hosueNumbers) {
+                houses.put(integer,natalChart.getHouses().get(add1stParameterHouseto2ndParameterHouse(integer,getHousebySign(lagnaSign,natalChart))));
+            }
+        return houses;
+    }
+
+    public static Sign convertZodiacSignToSign(com.astrology.RuleEngine.ZodiacSign zodiacSign) {
+        return signs.get(zodiacSign.ordinal() + 1);
+    }
 }

@@ -34,6 +34,10 @@ public class AdvancedAstrologyApp {
     }
 
     private static void processChart(ChartData chartData) {
+        System.out.println("Processing chart for: " + chartData.getName());
+        System.out.println("D1 House Positions: " + java.util.Arrays.toString(chartData.getHousePositions()));
+        System.out.println("D9 House Positions: " + java.util.Arrays.toString(chartData.getD9HousePositions()));
+
         CompleteChart completeChart = new CompleteChart();
         DivisionalChartData d1 = new DivisionalChartData(DivisionalChart.D1);
 
@@ -58,14 +62,46 @@ public class AdvancedAstrologyApp {
 
         completeChart.addDivisionalChart(DivisionalChart.D1, d1);
 
+        if (chartData.getD9HousePositions() != null && chartData.getD9HousePositions().length > 0 && !chartData.getD9HousePositions()[0].trim().isEmpty()) {
+            try {
+                String[] firstHouseD9 = chartData.getD9HousePositions()[0].split("-");
+                if (firstHouseD9.length > 0 && !firstHouseD9[0].trim().isEmpty()) {
+                    DivisionalChartData d9 = new DivisionalChartData(DivisionalChart.D9);
+                    d9.setAscendant(getZodiacSign(Integer.parseInt(firstHouseD9[0])));
+
+                    int houseNumberD9 = 1;
+                    for (String housePositionString : chartData.getD9HousePositions()) {
+                        String[] parts = housePositionString.split("-");
+                        if (parts.length > 0 && !parts[0].trim().isEmpty()) {
+                            ZodiacSign sign = getZodiacSign(Integer.parseInt(parts[0]));
+
+                            for (int i = 1; i < parts.length; i++) {
+                                String planetString = parts[i];
+                                if (planetString != null && !planetString.trim().isEmpty()) {
+                                    Planet planet = getPlanet(planetString);
+                                    boolean isRetro = isRetrograde(planetString);
+                                    // Using dummy values for degrees and Nakshatra as they are not in the CSV
+                                    d9.addPlanetPosition(planet, new PlanetPosition(planet, houseNumberD9, sign, 0.0, Nakshatra.ASHWINI, isRetro));
+                                }
+                            }
+                        }
+                        houseNumberD9++;
+                    }
+
+                    completeChart.addDivisionalChart(DivisionalChart.D9, d9);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Skipping D9 chart for " + chartData.getName() + " due to invalid data.");
+            }
+        }
+
         if (ChartValidator.validate(d1)) {
             try {
                 String personName = chartData.getName();
                 File outputDir = new File("target/generated-charts");
                 outputDir.mkdirs();
                 String imagePath = new File(outputDir, personName.replace(" ", "_") + "_chart.png").getAbsolutePath();
-                NorthIndianChartImageGenerator.generateChartImage(d1, null, imagePath, personName, chartData.getDob(), chartData.getBirthTime(), chartData.getBirthPlace());
-                //System.out.println("Chart image generated at: " + new File(imagePath).getAbsolutePath());
+                NorthIndianChartImageGenerator.generateChartImage(d1, completeChart.getChart(DivisionalChart.D9), imagePath, personName, chartData.getDob(), chartData.getBirthTime(), chartData.getBirthPlace());
 
                 AdvancedRuleEngine engine = new AdvancedRuleEngine();
                 Map<String, List<RuleResult>> results = engine.evaluateCompleteChart(completeChart, DivisionalChart.D1);

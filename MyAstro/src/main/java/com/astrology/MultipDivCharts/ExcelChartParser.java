@@ -33,17 +33,39 @@ public class ExcelChartParser {
                 Row currentRow = iterator.next();
                 DataFormatter formatter = new DataFormatter();
 
-                String birthTime = formatter.formatCellValue(currentRow.getCell(0));
-                String birthPlace = formatter.formatCellValue(currentRow.getCell(1));
-                String dob = formatter.formatCellValue(currentRow.getCell(2));
                 String name = formatter.formatCellValue(currentRow.getCell(3));
+                if (name != null && !name.trim().isEmpty()) {
+                    String birthTime = formatter.formatCellValue(currentRow.getCell(0));
+                    String birthPlace = formatter.formatCellValue(currentRow.getCell(1));
+                    String dob = formatter.formatCellValue(currentRow.getCell(2));
 
-                String[] housePositions = new String[12];
-                for (int i = 0; i < 12; i++) {
-                    housePositions[i] = formatter.formatCellValue(currentRow.getCell(i + 4));
+                    String[] housePositions = new String[12];
+                    for (int i = 0; i < 12; i++) {
+                        housePositions[i] = formatter.formatCellValue(currentRow.getCell(i + 4));
+                    }
+
+                    String[] d9HousePositions = new String[12];
+                    if (currentRow.getLastCellNum() >= 28) {
+                        // Check if the first D9 cell (column 16) is empty and there's data in column 28
+                        if (formatter.formatCellValue(currentRow.getCell(16)).trim().isEmpty() && currentRow.getLastCellNum() >= 29) {
+                            // If so, read from column 17 to 28
+                            for (int i = 0; i < 12; i++) {
+                                d9HousePositions[i] = formatter.formatCellValue(currentRow.getCell(i + 17));
+                            }
+                        } else {
+                            // Otherwise, use the original logic
+                            for (int i = 0; i < 12; i++) {
+                                d9HousePositions[i] = formatter.formatCellValue(currentRow.getCell(i + 16));
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < 12; i++) {
+                            d9HousePositions[i] = "";
+                        }
+                    }
+
+                    chartDataList.add(new ChartData(name, dob, birthTime, birthPlace, housePositions, d9HousePositions));
                 }
-
-                chartDataList.add(new ChartData(name, dob, birthTime, birthPlace, housePositions));
             }
         }
         return chartDataList;

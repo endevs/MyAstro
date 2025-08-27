@@ -125,7 +125,7 @@ public class Rule6 {
 							planetAt7thHouseD1.contains(Utils.isThisPlanetContain(11,natalChartD1)) 
 							) {
 						sbString.append(System.getProperty("line.separator"));
-						sbString.append("The person will not commited any relationship until a son bourn. Why Ketu because ketu is ‘Kulasya Unati’");
+						sbString.append("The person will not commited any relationship until a son bourn. Why Ketu because ketu is Kulasya Unati");
 						sbString.append(System.getProperty("line.separator"));
 						sbString.append("Reason - D1 - 7th House Contain Ketu or Rahu");
 						sbString.append(System.getProperty("line.separator"));
@@ -403,7 +403,7 @@ public class Rule6 {
 						"Gives Wealth\r\n" + 
 						"Planets in kendra in D9 support you and benefit you\r\n" + 
 						"Lords of kendra in D9 can increase wealth when well placed \r\n" + 
-						"4th house in D9 is not normal kendra it can give you punishment even if small mistakes so 4th house in D9 is very dangerous in char.It is always looking for “are you innocent ?” if no then ready  for punishment. Depend on how you trite with weaker person then you,  how you trite with children and women.\r\n" + 
+						"4th house in D9 is not normal kendra it can give you punishment even if small mistakes so 4th house in D9 is very dangerous in char.It is always looking for 'are you innocent ?' if no then ready  for punishment. Depend on how you trite with weaker person then you,  how you trite with children and women.\r\n" + 
 						"\r\n" + 
 						"\r\n" + 
 						"If 4th House having benefic planet congratulation good life.\r\n" + 
