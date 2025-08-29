@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import javax.imageio.ImageIO;
+import com.astrology.RuleEngine.Planet;
 import com.astrology.RuleEngine.ZodiacSign;
 
 public class NorthIndianChartImageGenerator {
@@ -97,12 +98,52 @@ public class NorthIndianChartImageGenerator {
 
         if (!planets.isEmpty()) {
             g2d.setFont(new Font("Arial", Font.BOLD, 12));
-            String planetsString = String.join(",", planets);
-            g2d.drawString(planetsString, x, y);
+            int currentY = y;
+            for (String planetAbbreviation : planets) { // Changed planetName to planetAbbreviation
+                Planet planet = getPlanetFromAbbreviation(planetAbbreviation); // New helper method
+                g2d.setColor(getPlanetColor(planet));
+                // Center the planet text
+                int textWidth = g2d.getFontMetrics().stringWidth(planetAbbreviation); // Use abbreviation for width
+                g2d.drawString(planetAbbreviation, x - textWidth / 2, currentY);
+                currentY += 15; // Move down for the next planet
+            }
         }
         if (isAscendant) {
             g2d.setFont(new Font("Arial", Font.BOLD, 12));
+            g2d.setColor(Color.RED); // Color for Ascendant
             g2d.drawString("As", x + 20, y - 20);
+        }
+    }
+
+    private static Color getPlanetColor(Planet planet) {
+        switch (planet) {
+            case SUN: return Color.ORANGE;
+            case MOON: return Color.BLUE;
+            case MARS: return Color.RED;
+            case MERCURY: return Color.GREEN;
+            case JUPITER: return Color.MAGENTA;
+            case VENUS: return Color.PINK;
+            case SATURN: return Color.DARK_GRAY;
+            case RAHU: return Color.CYAN;
+            case KETU: return Color.LIGHT_GRAY;
+            default: return Color.BLACK;
+        }
+    }
+
+    // New helper method to convert abbreviation to Planet enum
+    private static Planet getPlanetFromAbbreviation(String abbreviation) {
+        String cleanAbbreviation = abbreviation.replaceAll("[^a-zA-Z]", "").toUpperCase(); // Remove non-alphabetic characters
+        switch (cleanAbbreviation) {
+            case "SU": return Planet.SUN;
+            case "MO": return Planet.MOON;
+            case "MA": return Planet.MARS;
+            case "ME": return Planet.MERCURY;
+            case "JU": return Planet.JUPITER;
+            case "VE": return Planet.VENUS;
+            case "SA": return Planet.SATURN;
+            case "RA": return Planet.RAHU;
+            case "KE": return Planet.KETU;
+            default: throw new IllegalArgumentException("Unknown planet abbreviation: " + abbreviation); // Use original abbreviation in error message
         }
     }
 }

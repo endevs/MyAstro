@@ -1,5 +1,6 @@
 package com.astrology.MultipDivCharts;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -122,68 +123,101 @@ public class AdvancedAstrologyApp {
 
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
 
+            // Define colors
+            Color headerColor = new Color(70, 130, 180); // Steel Blue
+            Color borderColor = new Color(0, 0, 128); // Navy
+            Color textColor = Color.DARK_GRAY;
+            Color ruleHeaderColor = new Color(240, 248, 255); // Alice Blue
+
+            // Draw border
+            float margin = 30;
+            float width = page.getMediaBox().getWidth() - 2 * margin;
+            float height = page.getMediaBox().getHeight() - 2 * margin;
+            contentStream.setStrokingColor(borderColor);
+            contentStream.setLineWidth(1.5f);
+            contentStream.addRect(margin, margin, width, height);
+            contentStream.stroke();
+
             // Header
+            contentStream.setNonStrokingColor(headerColor);
+            contentStream.addRect(margin, page.getMediaBox().getHeight() - margin - 80, width, 80);
+            contentStream.fill();
+
             contentStream.beginText();
-            contentStream.setFont(PDType1Font.TIMES_BOLD, 18);
-            contentStream.newLineAtOffset(50, 750);
-            contentStream.showText("Astrological Report for " + personName);
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 28);
+            contentStream.setNonStrokingColor(Color.WHITE);
+            contentStream.newLineAtOffset(margin + 20, page.getMediaBox().getHeight() - margin - 45);
+            contentStream.showText("Natal Chart Report");
+            contentStream.endText();
+
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA, 16);
+            contentStream.newLineAtOffset(margin + 20, page.getMediaBox().getHeight() - margin - 70);
+            contentStream.showText("For: " + personName);
             contentStream.endText();
 
             // Chart Image
             PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, document);
-            contentStream.drawImage(pdImage, 50, 500, pdImage.getWidth() / 2.5f, pdImage.getHeight() / 2.5f);
+            float imageWidth = width - 40; // a little padding
+            float scale = imageWidth / pdImage.getWidth();
+            float imageHeight = pdImage.getHeight() * scale;
+            float imageX = margin + 20;
+            float imageY = page.getMediaBox().getHeight() - margin - 80 - imageHeight - 20;
+            contentStream.drawImage(pdImage, imageX, imageY, imageWidth, imageHeight);
 
-            // Predictions
-            float yPosition = 450;
-            float margin = 50;
-            float width = page.getMediaBox().getWidth() - 2 * margin;
+            // Rule Results
+            float yPosition = imageY - 30;
 
             for (Map.Entry<String, List<RuleResult>> entry : results.entrySet()) {
-                if (yPosition < 80) {
+                yPosition -= 20;
+
+                // Check for new page
+                if (yPosition < margin + 40) {
                     contentStream.close();
                     page = new PDPage();
                     document.addPage(page);
                     contentStream = new PDPageContentStream(document, page);
-                    yPosition = page.getMediaBox().getHeight() - 50;
+                    yPosition = page.getMediaBox().getHeight() - margin - 20;
                 }
+
+                // Category Header
+                contentStream.setNonStrokingColor(ruleHeaderColor);
+                contentStream.addRect(margin, yPosition - 15, width, 20);
+                contentStream.fill();
 
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA_BOLD, 14);
-                contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText(entry.getKey());
+                contentStream.setNonStrokingColor(textColor);
+                contentStream.newLineAtOffset(margin + 10, yPosition);
+                contentStream.showText(entry.getKey().toUpperCase());
                 contentStream.endText();
-                yPosition -= 20;
+                yPosition -= 25;
 
                 for (RuleResult result : entry.getValue()) {
                     String[] descriptionLines = result.getDescription().split("\\n");
                     for (String line : descriptionLines) {
-                        if (yPosition < 80) {
+                        String text = String.format("- %s (Confidence: %.0f%%)", line, result.getConfidence() * 100);
+                        
+                        // Estimate lines needed for this result
+                        float textHeight = (float) Math.ceil(PDType1Font.HELVETICA.getStringWidth(text) / 1000 * 10 / width) * 15; // 15 is approximate line height
+
+                        if (yPosition < margin + textHeight) {
                             contentStream.close();
                             page = new PDPage();
                             document.addPage(page);
                             contentStream = new PDPageContentStream(document, page);
-                            yPosition = page.getMediaBox().getHeight() - 50;
+                            yPosition = page.getMediaBox().getHeight() - margin - 20;
                         }
-                        yPosition = writeWrappedText(contentStream, "- " + line, PDType1Font.HELVETICA, 10, margin + 10, yPosition, width - 20);
+
+                        yPosition = writeWrappedText(contentStream, text, PDType1Font.HELVETICA, 10, margin + 10, yPosition, width - 20);
+                    }
+                    if (result.getReference() != null && !result.getReference().isEmpty()) {
+                        yPosition = writeWrappedText(contentStream, "Reference: " + result.getReference(), PDType1Font.HELVETICA_OBLIQUE, 8, margin + 10, yPosition, width - 20);
                     }
                     yPosition -= 10;
                 }
             }
-            
-            // Footer
-            contentStream.beginText();
-            contentStream.setFont(PDType1Font.HELVETICA, 8);
-            contentStream.newLineAtOffset(50, 30);
-            contentStream.showText("This report is generated by MyAstro App.");
-            contentStream.endText();
-            
-            contentStream.beginText();
-            contentStream.setFont(PDType1Font.HELVETICA, 8);
-            contentStream.newLineAtOffset(500, 30);
-            contentStream.showText("Page 1 of 1");
-            contentStream.endText();
-
-            contentStream.close();
+            contentStream.close(); // Close the last content stream
 
             File outputDir = new File("target/generated-charts");
             outputDir.mkdirs();
@@ -215,6 +249,7 @@ public class AdvancedAstrologyApp {
         for (String l : lines) {
             contentStream.beginText();
             contentStream.setFont(font, fontSize);
+            contentStream.setNonStrokingColor(Color.DARK_GRAY);
             contentStream.newLineAtOffset(x, yPosition);
             contentStream.showText(l);
             contentStream.endText();

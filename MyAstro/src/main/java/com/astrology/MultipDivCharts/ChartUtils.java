@@ -1,12 +1,12 @@
 package com.astrology.MultipDivCharts;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.astrology.RuleEngine.Planet;
 import com.astrology.RuleEngine.PlanetPosition;
 import com.astrology.RuleEngine.ZodiacSign;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class ChartUtils {
 
@@ -14,12 +14,11 @@ public class ChartUtils {
         List<String> planets = new ArrayList<>();
         for (Map.Entry<Planet, PlanetPosition> entry : planetPositions.entrySet()) {
             if (entry.getValue().getSign() == sign) {
-                String planetName = entry.getKey().name().substring(0, 2);
+                String planetAbbreviation = entry.getKey().name().substring(0, 2);
                 if (entry.getValue().isRetrograde()) {
-                    planets.add("(" + planetName + ")");
-                } else {
-                    planets.add(planetName);
+                    planetAbbreviation = "(" + planetAbbreviation + ")";
                 }
+                planets.add(planetAbbreviation);
             }
         }
         return planets;
