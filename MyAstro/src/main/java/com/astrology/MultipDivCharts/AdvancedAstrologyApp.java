@@ -122,78 +122,68 @@ public class AdvancedAstrologyApp {
 
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
 
+            // Header
             contentStream.beginText();
-            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
+            contentStream.setFont(PDType1Font.TIMES_BOLD, 18);
             contentStream.newLineAtOffset(50, 750);
-            contentStream.showText("Natal Chart for: " + personName);
+            contentStream.showText("Astrological Report for " + personName);
             contentStream.endText();
 
+            // Chart Image
             PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, document);
-            contentStream.drawImage(pdImage, 50, 450, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
+            contentStream.drawImage(pdImage, 50, 500, pdImage.getWidth() / 2.5f, pdImage.getHeight() / 2.5f);
 
-            float yPosition = 400;
+            // Predictions
+            float yPosition = 450;
             float margin = 50;
             float width = page.getMediaBox().getWidth() - 2 * margin;
-            float lineHeight = 15; // Approximate line height
 
             for (Map.Entry<String, List<RuleResult>> entry : results.entrySet()) {
-                // Check if there's enough space for the category header
-                if (yPosition < margin + 20) { // 20 is arbitrary space for header
+                if (yPosition < 80) {
                     contentStream.close();
                     page = new PDPage();
                     document.addPage(page);
                     contentStream = new PDPageContentStream(document, page);
-                    yPosition = page.getMediaBox().getHeight() - margin; // Reset yPosition for new page
+                    yPosition = page.getMediaBox().getHeight() - 50;
                 }
 
                 contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 14);
                 contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("=== " + entry.getKey().toUpperCase() + " ===");
+                contentStream.showText(entry.getKey());
                 contentStream.endText();
                 yPosition -= 20;
 
                 for (RuleResult result : entry.getValue()) {
-                    // Print Rule Name and Reference if available
-                    if (result.getRuleName() != null && !result.getRuleName().isEmpty()) {
-                        contentStream.beginText();
-                        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
-                        contentStream.newLineAtOffset(margin, yPosition);
-                        contentStream.showText("Rule: " + result.getRuleName());
-                        contentStream.endText();
-                        yPosition -= 12;
-                    }
-                    if (result.getReference() != null && !result.getReference().isEmpty()) {
-                        contentStream.beginText();
-                        contentStream.setFont(PDType1Font.HELVETICA, 8);
-                        contentStream.newLineAtOffset(margin, yPosition);
-                        contentStream.showText("Reference: " + result.getReference());
-                        contentStream.endText();
-                        yPosition -= 10;
-                    }
-
                     String[] descriptionLines = result.getDescription().split("\\n");
                     for (String line : descriptionLines) {
-                        String text = String.format("- %s (Confidence: %.0f%%)", line, result.getConfidence() * 100);
-                        
-                        // Estimate lines needed for this result
-                        float textHeight = (float) Math.ceil(PDType1Font.HELVETICA.getStringWidth(text) / 1000 * 10 / width) * lineHeight;
-
-                        if (yPosition < margin + textHeight) {
+                        if (yPosition < 80) {
                             contentStream.close();
                             page = new PDPage();
                             document.addPage(page);
                             contentStream = new PDPageContentStream(document, page);
-                            yPosition = page.getMediaBox().getHeight() - margin;
+                            yPosition = page.getMediaBox().getHeight() - 50;
                         }
-
-                        yPosition = writeWrappedText(contentStream, text, PDType1Font.HELVETICA, 10, margin, yPosition, width);
-                        yPosition -= 5; // Add some space between results
+                        yPosition = writeWrappedText(contentStream, "- " + line, PDType1Font.HELVETICA, 10, margin + 10, yPosition, width - 20);
                     }
+                    yPosition -= 10;
                 }
-                yPosition -= 10; // Add some space between categories
             }
-            contentStream.close(); // Close the last content stream
+            
+            // Footer
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA, 8);
+            contentStream.newLineAtOffset(50, 30);
+            contentStream.showText("This report is generated by MyAstro App.");
+            contentStream.endText();
+            
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA, 8);
+            contentStream.newLineAtOffset(500, 30);
+            contentStream.showText("Page 1 of 1");
+            contentStream.endText();
+
+            contentStream.close();
 
             File outputDir = new File("target/generated-charts");
             outputDir.mkdirs();
@@ -238,7 +228,7 @@ public class AdvancedAstrologyApp {
         results.forEach((category, ruleResults) -> {
             System.out.println("\n=== " + category.toUpperCase() + " ===");
             ruleResults.forEach(result ->
-                System.out.printf("- %s (Confidence: %.0f%%)\\n",
+                System.out.printf("- %s (Confidence: %.0f%%)",
                     result.getDescription(), result.getConfidence() * 100)
             );
         });
@@ -249,7 +239,7 @@ public class AdvancedAstrologyApp {
     }
 
     private static Planet getPlanet(String planetAbbreviation) {
-        String planetName = planetAbbreviation.replaceAll("[()]", "").toUpperCase();
+        String planetName = planetAbbreviation.replaceAll("[^a-zA-Z]", "").toUpperCase();
         if (planetName.length() > 2) { // Handle cases like 'SUN'
         	return Planet.valueOf(planetName);
         }

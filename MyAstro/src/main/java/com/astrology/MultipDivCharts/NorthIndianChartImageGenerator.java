@@ -48,40 +48,45 @@ public class NorthIndianChartImageGenerator {
     }
 
     private static void drawChart(Graphics2D g2d, DivisionalChartData chartData, String title, int startX, int startY) {
+        int chartSize = 500;
         g2d.setFont(new Font("Arial", Font.BOLD, 16));
-        g2d.drawString(title, startX + 200, startY);
+        g2d.drawString(title, startX + (chartSize / 2) - (g2d.getFontMetrics().stringWidth(title) / 2), startY);
 
         // Draw chart outline
         g2d.setColor(Color.BLACK);
-        g2d.drawRect(startX, startY + 50, 500, 500);
-        g2d.drawLine(startX, startY + 50, startX + 500, startY + 550);
-        g2d.drawLine(startX, startY + 550, startX + 500, startY + 50);
-        g2d.drawLine(startX, startY + 300, startX + 250, startY + 50);
-        g2d.drawLine(startX + 250, startY + 50, startX + 500, startY + 300);
-        g2d.drawLine(startX + 500, startY + 300, startX + 250, startY + 550);
-        g2d.drawLine(startX + 250, startY + 550, startX, startY + 300);
+        g2d.drawRect(startX, startY + 20, chartSize, chartSize);
+        g2d.drawLine(startX, startY + 20, startX + chartSize, startY + 20 + chartSize);
+        g2d.drawLine(startX, startY + 20 + chartSize, startX + chartSize, startY + 20);
+        g2d.drawLine(startX, startY + 20 + chartSize / 2, startX + chartSize / 2, startY + 20);
+        g2d.drawLine(startX + chartSize / 2, startY + 20, startX + chartSize, startY + 20 + chartSize / 2);
+        g2d.drawLine(startX + chartSize, startY + 20 + chartSize / 2, startX + chartSize / 2, startY + 20 + chartSize);
+        g2d.drawLine(startX + chartSize / 2, startY + 20 + chartSize, startX, startY + 20 + chartSize / 2);
 
         // Get houses
         ZodiacSign[] houses = new ZodiacSign[12];
         ZodiacSign ascendant = chartData.getAscendant();
+        if (ascendant == null) {
+            g2d.drawString("Ascendant not found", startX + 150, startY + 300);
+            return;
+        }
         houses[0] = ascendant;
         for (int i = 1; i < 12; i++) {
             houses[i] = ZodiacSign.values()[(ascendant.ordinal() + i) % 12];
         }
 
         // Draw houses and planets
-        drawHouse(g2d, houses[0], chartData, startX + 225, startY + 100, true);
-        drawHouse(g2d, houses[1], chartData, startX + 100, startY + 100, false);
-        drawHouse(g2d, houses[2], chartData, startX + 25, startY + 175, false);
-        drawHouse(g2d, houses[3], chartData, startX + 25, startY + 300, false);
-        drawHouse(g2d, houses[4], chartData, startX + 25, startY + 425, false);
-        drawHouse(g2d, houses[5], chartData, startX + 100, startY + 500, false);
-        drawHouse(g2d, houses[6], chartData, startX + 225, startY + 500, false);
-        drawHouse(g2d, houses[7], chartData, startX + 350, startY + 500, false);
-        drawHouse(g2d, houses[8], chartData, startX + 425, startY + 425, false);
-        drawHouse(g2d, houses[9], chartData, startX + 425, startY + 300, false);
-        drawHouse(g2d, houses[10], chartData, startX + 425, startY + 175, false);
-        drawHouse(g2d, houses[11], chartData, startX + 350, startY + 100, false);
+        drawHouse(g2d, houses[0], chartData, startX + 250, startY + 120, true);
+        drawHouse(g2d, houses[1], chartData, startX + 125, startY + 120, false);
+        drawHouse(g2d, houses[2], chartData, startX + 50, startY + 195, false);
+        drawHouse(g2d, houses[3], chartData, startX + 50, startY + 320, false);
+        drawHouse(g2d, houses[4], chartData, startX + 50, startY + 445, false);
+        drawHouse(g2d, houses[5], chartData, startX + 125, startY + 520, false);
+        drawHouse(g2d, houses[6], chartData, startX + 250, startY + 520, false);
+        drawHouse(g2d, houses[7], chartData, startX + 375, startY + 520, false);
+        drawHouse(g2d, houses[8], chartData, startX + 450, startY + 445, false);
+        drawHouse(g2d, houses[9], chartData, startX + 450, startY + 320, false);
+        drawHouse(g2d, houses[10], chartData, startX + 450, startY + 195, false);
+        drawHouse(g2d, houses[11], chartData, startX + 375, startY + 120, false);
     }
 
     private static void drawHouse(Graphics2D g2d, ZodiacSign sign, DivisionalChartData chartData, int x, int y, boolean isAscendant) {
