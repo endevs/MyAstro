@@ -32,10 +32,160 @@
                 <input type="text" id="birthTime" th:field="*{birthTime}" class="form-control">
             </div>
 
+            <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Chart</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/select2/4.0.13/css/select2.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">My Astro</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h2>Edit Chart</h2>
+        <form th:action="@{/update/{id}(id=${chart.id})}" th:object="${chart}" method="post">
+            <input type="hidden" th:field="*{id}">
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <input type="text" id="name" th:field="*{name}" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="dob" class="form-label">Date of Birth:</label>
+                <input type="text" id="dob" th:field="*{dob}" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="birthTime" class="form-label">Birth Time:</label>
+                <input type="text" id="birthTime" th:field="*{birthTime}" class="form-control">
+            </div>
+
             <div class="mb-3">
                 <label for="birthPlace" class="form-label">Birth Place:</label>
                 <input type="text" id="birthPlace" th:field="*{birthPlace}" class="form-control">
             </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>D1 Chart</h4>
+                    <div class="mb-3">
+                        <label for="d1Ascendant" class="form-label">Ascendant:</label>
+                        <select id="d1Ascendant" class="form-select" onchange="updateHouses('d1')">
+                            <option th:each="sign : ${T(com.astrology.RuleEngine.ZodiacSign).values()}" th:value="${sign.ordinal()}" th:text="${sign.name()}"></option>
+                        </select>
+                    </div>
+                    <div id="d1Houses"></div>
+                </div>
+                <div class="col-md-6">
+                    <h4>D9 Chart</h4>
+                    <div class="mb-3">
+                        <label for="d9Ascendant" class="form-label">Ascendant:</label>
+                        <select id="d9Ascendant" class="form-select" onchange="updateHouses('d9')">
+                            <option th:each="sign : ${T(com.astrology.RuleEngine.ZodiacSign).values()}" th:value="${sign.ordinal()}" th:text="${sign.name()}"></option>
+                        </select>
+                    </div>
+                    <div id="d9Houses"></div>
+                </div>
+            </div>
+
+            <textarea id="housePositions" th:field="*{housePositions}" class="d-none"></textarea>
+            <textarea id="d9HousePositions" th:field="*{d9HousePositions}" class="d-none"></textarea>
+
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </form>
+    </main>
+
+    <script th:src="@{/webjars/jquery/3.6.0/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/select2/4.0.13/js/select2.min.js}"></script>
+    <script>
+        const signs = ["ARIES", "TAURUS", "GEMINI", "CANCER", "LEO", "VIRGO", "LIBRA", "SCORPIO", "SAGITTARIUS", "CAPRICORN", "AQUARIUS", "PISCES"];
+        const planets = ["SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN", "RAHU", "KETU"];
+
+        function updateHouses(chartType) {
+            const ascendant = parseInt($(`#${chartType}Ascendant`).val());
+            const housesDiv = $(`#${chartType}Houses`);
+            housesDiv.empty();
+
+            for (let i = 0; i < 12; i++) {
+                const houseNumber = i + 1;
+                const signIndex = (ascendant + i) % 12;
+                const signName = signs[signIndex];
+
+                const houseHtml = `
+                    <div class="mb-3">
+                        <label class="form-label">House ${houseNumber} (${signName}):</label>
+                        <select id="${chartType}House${houseNumber}" class="form-select select2" multiple="multiple">
+                            ${planets.map(p => `<option value="${p}">${p}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+                housesDiv.append(houseHtml);
+                $(`#${chartType}House${houseNumber}`).select2();
+            }
+            updateHiddenTextareas();
+        }
+
+        function updateHiddenTextareas() {
+            let d1Positions = [];
+            for (let i = 1; i <= 12; i++) {
+                const signIndex = (parseInt($('#d1Ascendant').val()) + i - 1) % 12;
+                const selectedPlanets = $(`#d1House${i}`).val() || [];
+                d1Positions.push(`${signIndex + 1}-${selectedPlanets.join('-')}`);
+            }
+            $('#housePositions').val(d1Positions.join(';'));
+
+            let d9Positions = [];
+            for (let i = 1; i <= 12; i++) {
+                const signIndex = (parseInt($('#d9Ascendant').val()) + i - 1) % 12;
+                const selectedPlanets = $(`#d9House${i}`).val() || [];
+                d9Positions.push(`${signIndex + 1}-${selectedPlanets.join('-')}`);
+            }
+            $('#d9HousePositions').val(d9Positions.join(';'));
+        }
+
+        $(document).ready(function() {
+            // Initialize houses on page load
+            updateHouses('d1');
+            updateHouses('d9');
+
+            // Set initial values from hidden textareas
+            const d1Data = $('#housePositions').val().split(';');
+            if (d1Data.length === 12) {
+                const firstHouse = d1Data[0].split('-');
+                $('#d1Ascendant').val(parseInt(firstHouse[0]) - 1).trigger('change');
+                d1Data.forEach((houseData, index) => {
+                    const houseNumber = index + 1;
+                    const planets = houseData.split('-').slice(1);
+                    $(`#d1House${houseNumber}`).val(planets).trigger('change');
+                });
+            }
+
+            const d9Data = $('#d9HousePositions').val().split(';');
+            if (d9Data.length === 12) {
+                const firstHouse = d9Data[0].split('-');
+                $('#d9Ascendant').val(parseInt(firstHouse[0]) - 1).trigger('change');
+                d9Data.forEach((houseData, index) => {
+                    const houseNumber = index + 1;
+                    const planets = houseData.split('-').slice(1);
+                    $(`#d9House${houseNumber}`).val(planets).trigger('change');
+                });
+            }
+
+            // Update hidden textareas on any change
+            $('body').on('change', '.select2', updateHiddenTextareas);
+        });
+    </script>
+</body>
+</html>
 
             <div class="row">
                 <div class="col-md-6">
