@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Chart</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">My Astro</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h2>Add Chart</h2>
+        <form th:action="@{/add}" th:object="${chart}" method="post">
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <input type="text" id="name" th:field="*{name}" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="dob" class="form-label">Date of Birth:</label>
+                <input type="text" id="dob" th:field="*{dob}" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="birthTime" class="form-label">Birth Time:</label>
+                <input type="text" id="birthTime" th:field="*{birthTime}" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="birthPlace" class="form-label">Birth Place:</label>
+                <input type="text" id="birthPlace" th:field="*{birthPlace}" class="form-control">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="housePositions" class="form-label">House Positions (D1):</label>
+                        <textarea id="housePositions" th:field="*{housePositions}" class="form-control" rows="5"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="d9HousePositions" class="form-label">House Positions (D9):</label>
+                        <textarea id="d9HousePositions" th:field="*{d9HousePositions}" class="form-control" rows="5"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </form>
+    </main>
+
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
