@@ -2,59 +2,187 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Add Chart</title>
-    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <style>
+        .edit-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .house-box { width: 100px; min-height: 100px; border: 1px solid #ccc; background-color: #f8f9fa; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .house-box .sign { font-size: 12px; font-weight: bold; color: #666; }
+        .house-box .planets { min-height: 50px; }
+        .chart-preview-container { width: 400px; height: 400px; margin: 20px auto; border: 1px solid #ccc; }
+        .planet { padding: 5px; margin: 2px; border-radius: 50%; color: white; font-weight: bold; cursor: grab; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; font-size: 12px; }
+        .planet-list-container { padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .planet.SUN { background-color: #FFD700; }
+        .planet.MOON { background-color: #C0C0C0; }
+        .planet.MARS { background-color: #FF4500; }
+        .planet.MERCURY { background-color: #9ACD32; }
+        .planet.JUPITER { background-color: #FF69B4; }
+        .planet.VENUS { background-color: #EE82EE; }
+        .planet.SATURN { background-color: #4682B4; }
+        .planet.RAHU { background-color: #800080; }
+        .planet.KETU { background-color: #A52A2A; }
+        .droppable-hover { background-color: #e9ecef; }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">My Astro</a>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top"><div class="container-fluid"><a class="navbar-brand" href="/">My Astro</a></div></nav>
+    <main class="container-fluid mt-5 pt-3">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>D1 Chart</h3>
+                        <div class="planet-list-container">
+                            <h5>Planets</h5>
+                            <div id="d1-planet-list" class="d-flex flex-wrap droppable">
+                                <div th:each="planet : ${T(com.astrology.RuleEngine.Planet).values()}" class="planet d1-planet" th:classappend="${planet.name()}" th:text="${#strings.substring(planet.name(), 0, 2)}" draggable="true" th:data-planet-name="${planet.name()}"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="d1Ascendant" class="form-label">Ascendant:</label>
+                            <select id="d1Ascendant" class="form-select">
+                                <option th:each="sign : ${T(com.astrology.RuleEngine.ZodiacSign).values()}" th:value="${sign.ordinal()}" th:text="${sign.name()}"></option>
+                            </select>
+                        </div>
+                        <div id="d1-edit-container" class="edit-container"></div>
+                        <button id="generate-d1-chart" class="btn btn-info mt-2">Generate D1 Chart</button>
+                        <div id="d1-chart-preview-container" class="chart-preview-container mt-4"><img id="d1-chart-image" style="max-width: 100%;"/></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h3>D9 Chart</h3>
+                        <div class="planet-list-container">
+                            <h5>Planets</h5>
+                            <div id="d9-planet-list" class="d-flex flex-wrap droppable">
+                                <div th:each="planet : ${T(com.astrology.RuleEngine.Planet).values()}" class="planet d9-planet" th:classappend="${planet.name()}" th:text="${#strings.substring(planet.name(), 0, 2)}" draggable="true" th:data-planet-name="${planet.name()}"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="d9Ascendant" class="form-label">Ascendant:</label>
+                            <select id="d9Ascendant" class="form-select">
+                                <option th:each="sign : ${T(com.astrology.RuleEngine.ZodiacSign).values()}" th:value="${sign.ordinal()}" th:text="${sign.name()}"></option>
+                            </select>
+                        </div>
+                        <div id="d9-edit-container" class="edit-container"></div>
+                        <button id="generate-d9-chart" class="btn btn-info mt-2">Generate D9 Chart</button>
+                        <div id="d9-chart-preview-container" class="chart-preview-container mt-4"><img id="d9-chart-image" style="max-width: 100%;"/></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <form th:action="@{/add}" th:object="${chart}" method="post" id="chart-form">
+                    <div class="mb-3"><label for="name" class="form-label">Name:</label><input type="text" id="name" th:field="*{name}" class="form-control" required></div>
+                    <div class="mb-3"><label for="dob" class="form-label">Date of Birth:</label><input type="date" id="dob" th:field="*{dob}" class="form-control"></div>
+                    <div class="mb-3"><label for="birthTime" class="form-label">Birth Time:</label><input type="time" id="birthTime" th:field="*{birthTime}" class="form-control"></div>
+                    <div class="mb-3"><label for="birthPlace" class="form-label">Birth Place:</label><input type="text" id="birthPlace" th:field="*{birthPlace}" class="form-control"></div>
+                    <textarea id="housePositions" name="housePositions" class="d-none"></textarea>
+                    <textarea id="d9HousePositions" name="d9HousePositions" class="d-none"></textarea>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="/" class="btn btn-secondary">Back to Home</a>
+                </form>
+            </div>
         </div>
-    </nav>
-
-    <main class="container">
-        <h2>Add Chart</h2>
-        <form th:action="@{/add}" th:object="${chart}" method="post">
-            <div class="mb-3">
-                <label for="name" class="form-label">Name:</label>
-                <input type="text" id="name" th:field="*{name}" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="dob" class="form-label">Date of Birth:</label>
-                <input type="text" id="dob" th:field="*{dob}" class="form-control">
-            </div>
-
-            <div class="mb-3">
-                <label for="birthTime" class="form-label">Birth Time:</label>
-                <input type="text" id="birthTime" th:field="*{birthTime}" class="form-control">
-            </div>
-
-            <div class="mb-3">
-                <label for="birthPlace" class="form-label">Birth Place:</label>
-                <input type="text" id="birthPlace" th:field="*{birthPlace}" class="form-control">
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="housePositions" class="form-label">House Positions (D1):</label>
-                        <textarea id="housePositions" th:field="*{housePositions}" class="form-control" rows="5"></textarea>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="d9HousePositions" class="form-label">House Positions (D9):</label>
-                        <textarea id="d9HousePositions" th:field="*{d9HousePositions}" class="form-control" rows="5"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="/" class="btn btn-secondary">Cancel</a>
-        </form>
     </main>
 
-    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const signs = ["ARIES", "TAURUS", "GEMINI", "CANCER", "LEO", "VIRGO", "LIBRA", "SCORPIO", "SAGITTARIUS", "CAPRICORN", "AQUARIUS", "PISCES"];
+        let draggedPlanet = null;
+
+        function renderEditBoxes(chartType, ascendant) {
+            const container = document.getElementById(`${chartType}-edit-container`);
+            container.innerHTML = '';
+            for (let i = 1; i <= 12; i++) {
+                const signIndex = (ascendant + i - 1) % 12;
+                const signName = signs[signIndex];
+                container.innerHTML += `
+                    <div class="house-box droppable ${chartType}-house" data-house-id="${i}">
+                        <div class="sign">${signName} (H${i})</div>
+                        <div class="planets"></div>
+                    </div>`;
+            }
+        }
+
+        async function generateChartImage(chartType) {
+            const ascendant = document.getElementById(`${chartType}Ascendant`).value;
+            let positions = [];
+            for (let i = 1; i <= 12; i++) {
+                const house = document.querySelector(`#${chartType}-edit-container .house-box[data-house-id='${i}']`);
+                const planets = Array.from(house.querySelectorAll('.planet')).map(p => p.dataset.planetName).join('-');
+                positions.push(`${i}=${planets}`);
+            }
+            const title = chartType.toUpperCase() + ' Chart';
+            const response = await fetch(`/api/chart/generate?ascendant=${ascendant}&positions=${positions.join(';')}&title=${title}`);
+            const blob = await response.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            document.getElementById(`${chartType}-chart-image`).src = imageUrl;
+        }
+
+        function setupDragAndDrop() {
+            document.querySelectorAll('.planet').forEach(p => p.addEventListener('dragstart', handleDragStart));
+            document.querySelectorAll('.droppable').forEach(d => {
+                d.addEventListener('dragover', handleDragOver);
+                d.addEventListener('dragleave', handleDragLeave);
+                d.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(e) { draggedPlanet = e.target; }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            const target = e.target.closest('.droppable');
+            if (target) {
+                const isD1Planet = draggedPlanet.classList.contains('d1-planet');
+                if ((isD1Planet && (target.classList.contains('d1-house') || target.id === 'd1-planet-list')) || 
+                    (!isD1Planet && (target.classList.contains('d9-house') || target.id === 'd9-planet-list'))) {
+                    target.classList.add('droppable-hover');
+                }
+            }
+        }
+
+        function handleDragLeave(e) {
+            const target = e.target.closest('.droppable');
+            if (target) target.classList.remove('droppable-hover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const target = e.target.closest('.droppable');
+            if (!target || !target.classList.contains('droppable-hover')) return;
+            target.classList.remove('droppable-hover');
+            const targetPlanetsContainer = target.querySelector('.planets') || target;
+            targetPlanetsContainer.appendChild(draggedPlanet);
+        }
+
+        function updateHiddenTextareas() {
+            ['d1', 'd9'].forEach(chartType => {
+                let positions = [];
+                const ascendant = parseInt(document.getElementById(`${chartType}Ascendant`).value);
+                for (let i = 1; i <= 12; i++) {
+                    const signIndex = (ascendant + i - 1) % 12;
+                    const house = document.querySelector(`#${chartType}-edit-container .house-box[data-house-id='${i}']`);
+                    const planets = Array.from(house.querySelectorAll('.planet')).map(p => p.dataset.planetName);
+                    positions.push(`${signIndex + 1}-${planets.join('-')}`);
+                }
+                document.getElementById(chartType === 'd1' ? 'housePositions' : 'd9HousePositions').value = positions.join(';');
+            });
+        }
+
+        document.getElementById('chart-form').addEventListener('submit', updateHiddenTextareas);
+        document.getElementById('generate-d1-chart').addEventListener('click', () => generateChartImage('d1'));
+        document.getElementById('generate-d9-chart').addEventListener('click', () => generateChartImage('d9'));
+
+        ['d1', 'd9'].forEach(chartType => {
+            const ascendantSelect = document.getElementById(`${chartType}Ascendant`);
+            ascendantSelect.addEventListener('change', () => {
+                renderEditBoxes(chartType, parseInt(ascendantSelect.value));
+                setupDragAndDrop();
+            });
+            renderEditBoxes(chartType, parseInt(ascendantSelect.value));
+        });
+
+        setupDragAndDrop();
+    });
+    </script>
 </body>
 </html>
