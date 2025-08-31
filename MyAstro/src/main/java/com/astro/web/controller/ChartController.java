@@ -4,19 +4,25 @@ import com.astro.web.model.Chart;
 import com.astro.web.service.AstrologyService;
 import com.astro.web.service.ChartService;
 import com.astro.web.service.PdfService;
+import com.astrology.MultipDivCharts.DivisionalChart;
+import com.astrology.MultipDivCharts.DivisionalChartData;
+import com.astrology.MultipDivCharts.NorthIndianChartImageGenerator;
+import com.astrology.RuleEngine.Nakshatra;
+import com.astrology.RuleEngine.Planet;
+import com.astrology.RuleEngine.PlanetPosition;
 import com.astrology.RuleEngine.RuleResult;
+import com.astrology.RuleEngine.ZodiacSign;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -111,5 +117,42 @@ public class ChartController {
         headers.setContentDispositionFormData("attachment", chart.getName() + "_chart.pdf");
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/api/chart/generate")
+    @ResponseBody
+    public ResponseEntity<byte[]> generateChartImage(@RequestParam("ascendant") int ascendant, @RequestParam("positions") String positions, @RequestParam("title") String title) throws IOException {
+        DivisionalChart divisionalChartType = title.startsWith("D1") ? DivisionalChart.D1 : DivisionalChart.D9;
+        DivisionalChartData chartData = new DivisionalChartData(divisionalChartType);
+        chartData.setAscendant(ZodiacSign.values()[ascendant]);
+
+        String[] pairs = positions.split(";");
+        for (String pair : pairs) {
+            String[] parts = pair.split("=");
+            if (parts.length == 2) {
+                int houseNumber = Integer.parseInt(parts[0]);
+                ZodiacSign sign = ZodiacSign.values()[(ascendant + houseNumber - 1) % 12];
+                String[] planets = parts[1].split("-");
+                for (String planetName : planets) {
+                    if (!planetName.isEmpty()) {
+                        Planet planet = Planet.valueOf(planetName);
+                        PlanetPosition planetPosition = new PlanetPosition(planet, houseNumber, sign, 0.0, Nakshatra.ASHWINI, false);
+                        chartData.addPlanetPosition(planet, planetPosition);
+                    }
+                }
+            }
+        }
+
+        BufferedImage chartImage = NorthIndianChartImageGenerator.generateSingleChartImage(chartData, title);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(chartImage, "png", baos);
+        byte[] imageBytes = baos.toByteArray();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        headers.setContentLength(imageBytes.length);
+
+        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
     }
 }

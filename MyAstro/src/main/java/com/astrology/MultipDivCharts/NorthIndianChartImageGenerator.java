@@ -13,6 +13,24 @@ import com.astrology.RuleEngine.ZodiacSign;
 
 public class NorthIndianChartImageGenerator {
 
+    public static BufferedImage generateSingleChartImage(DivisionalChartData chartData, String title) throws IOException {
+        int width = 600;
+        int height = 600;
+
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = bufferedImage.createGraphics();
+
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, width, height);
+
+        drawChart(g2d, chartData, title, 50, 50);
+
+        g2d.dispose();
+
+        return bufferedImage;
+    }
+
+
     public static void generateChartImage(DivisionalChartData d1, DivisionalChartData d9, String filePath, String name, String dob, String tob, String pob) throws IOException {
         int width = 1200;
         int height = 700;
